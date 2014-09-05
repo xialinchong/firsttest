@@ -2,6 +2,8 @@ package cn.com.chinaunicom.fileshare;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,6 +39,9 @@ public class LoginActivity extends Activity implements CallApiListener {
 	private final int SUCCESS = 4;
 	private ProgressDialog dialog;
 	
+	FSApp app;
+	public Set<String> loginSet = new TreeSet<String>();
+	
 	private Handler myhandler = new Handler(){
 		@Override
 		public void handleMessage(Message msg) {
@@ -57,15 +62,14 @@ public class LoginActivity extends Activity implements CallApiListener {
 				intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 				intent.setClass(LoginActivity.this, MainActivity.class);
 				LoginActivity.this.startActivity(intent);
-				if (dialog.isShowing()) {
-					dialog.dismiss();
-				}
 				break;
 			default:
 				break;
 			}
+			if (dialog.isShowing()) {
+				dialog.dismiss();
+			}
 		}
-		
 	};
 
 	@Override
@@ -73,8 +77,22 @@ public class LoginActivity extends Activity implements CallApiListener {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.login);
 
+		app = (FSApp)LoginActivity.this.getApplication();
+		
 		mlogin_name = (EditText) findViewById(R.id.login_name);
 		mlogin_pwd = (EditText) findViewById(R.id.login_pwd);
+		
+		loginSet.add( mlogin_name.getText().toString() );
+		loginSet.add( mlogin_pwd.getText().toString() );
+		Boolean flag = app.isSetEqual(app.loginSet, loginSet);
+		if (flag) {
+			Intent intent = new Intent();
+			intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			intent.setClass(LoginActivity.this, MainActivity.class);
+			LoginActivity.this.startActivity(intent);
+			return;
+		}
+		
 		mloginBtn = (Button) findViewById(R.id.login_btn);
 		mforgePwd = (TextView) findViewById(R.id.forget_pwd);
 
@@ -112,7 +130,11 @@ public class LoginActivity extends Activity implements CallApiListener {
 	@Override
 	public void onCallApiSuccess(int what, JSONObject result) {
 		try {
-			FSApp.getInstance().UserId = result.getString("id");
+			app.UserId = result.getString("id");
+			app.clearMapXml(LoginActivity.this);
+			app.saveArray("UserId", app.UserId, LoginActivity.this);
+			app.saveArray("user_login", mlogin_name.getText().toString(), LoginActivity.this);
+			app.saveArray("user_login", mlogin_pwd.getText().toString(), LoginActivity.this);
 			LoginActivity.this.myhandler.sendEmptyMessage(SUCCESS);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -139,13 +161,14 @@ public class LoginActivity extends Activity implements CallApiListener {
 
 		@Override
 		public void onClick(View v) {
+			
 			mloginBtn.setClickable(false);
 			if (mlogin_name.getText().toString().equals("") 
 					|| mlogin_pwd.getText().toString().equals("")) {
 				LoginActivity.this.myhandler.sendEmptyMessage(EMPTY_PWD_NAME);
 			}else {
 				dialog = ProgressDialog.
-						show(LoginActivity.this, "", "µÇÂ¼ÖÐ£¬ÇëÉÔµÈ ¡­", true, true); 
+						show(LoginActivity.this, "", "µÇÂ¼ÖÐ£¬ÇëÉÔµÈ ¡­", true, true);
 				new CallApiTask(0, LoginActivity.this).execute();
 			}
 		}

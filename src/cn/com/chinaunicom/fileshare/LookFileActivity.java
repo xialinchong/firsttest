@@ -60,6 +60,8 @@ public class LookFileActivity extends Activity implements CallApiListener {
 	private String[] strarr;// = new String[]{};
 	private String currId = null;
 	
+	FSApp app;
+	
 	private Handler myhandler = new Handler(){
 
 		@Override
@@ -85,6 +87,8 @@ public class LookFileActivity extends Activity implements CallApiListener {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.lookfile);
 		
+		app = (FSApp)LookFileActivity.this.getApplication();
+		
 		mlookhistory = (Button)findViewById(R.id.lookhistory);
 		
 		mopenway     = (Button)findViewById(R.id.other_ways);
@@ -102,14 +106,7 @@ public class LookFileActivity extends Activity implements CallApiListener {
 			@Override
 			public void onClick(View v) {
 				dialog = ProgressDialog.show(LookFileActivity.this, "", "处理中，请稍等 …", true, true);
-//				new Thread(new Runnable() {
-//					
-//					@Override
-//					public void run() {
-						new CallApiTask(MARK_AS_READED, LookFileActivity.this).execute();
-//					}
-//				}).start();
-//				new CallApiTask(MARK_AS_READED, LookFileActivity.this).execute();
+				new CallApiTask(MARK_AS_READED, LookFileActivity.this).execute();
 			}
 		});
 		mlooknew = (Button)findViewById(R.id.looknew);
@@ -194,7 +191,8 @@ public class LookFileActivity extends Activity implements CallApiListener {
 		if(currDir != null ){
 			Map<String, String> map = new HashMap<String, String>();
 			map.put( currDir.get("dirid").toString(), currDir.get("type").toString() );
-			if ( FSApp.getInstance().validataMap.indexOf(map) == -1
+			
+			if ( app.validataMap.indexOf(map) == -1
 					&& "is_locked".equalsIgnoreCase(currDir.get("is_locked").toString()) ) {
 				//验证机制：将文件的id传入密码验证的activity中进行验证，
 				//成功返回一个标志，传到要显示的页面保存起来，下次进入不再验证。
@@ -217,7 +215,9 @@ public class LookFileActivity extends Activity implements CallApiListener {
 			Map<String, Object> v = (Map<String, Object>)data.getSerializableExtra("validataMap");
 			Map<String, String> map = new HashMap<String, String>();
 			map.put( v.get("dirid").toString(), v.get("type").toString() );
-			FSApp.getInstance().validataMap.add(map);
+			app.validataMap.add(map);
+			app.saveArray( v.get("type").toString(), 
+					v.get("dirid").toString(), LookFileActivity.this );
 			loadData(LOAD_FILE);
 		}else{
 			this.finish();
@@ -248,7 +248,7 @@ public class LookFileActivity extends Activity implements CallApiListener {
 	@Override
 	public JSONObject callApi(int what) {
 		Map<String, String> item = new HashMap<String, String>();
-		item.put("user_id", FSApp.getInstance().UserId);
+		item.put("user_id", app.UserId);
 		
 		switch (what) {
 		case LOAD_FILE:

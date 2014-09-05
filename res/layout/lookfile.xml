@@ -21,7 +21,7 @@
             android:id="@+id/filelogo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/qt66" />
+            android:src="@drawable/qt" />
 	        
 
         <LinearLayout

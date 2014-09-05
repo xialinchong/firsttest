@@ -46,6 +46,8 @@ public class MainActivity extends Activity implements CallApiListener{
 	
 	private Map<String, Object> currDir =  null;
 	
+	FSApp app;
+	
 	private Handler myhandler = new Handler(){
 		@Override
 		public void handleMessage(Message msg) {
@@ -75,7 +77,9 @@ public class MainActivity extends Activity implements CallApiListener{
 			Map<String, Object> v = (Map<String, Object>)data.getSerializableExtra("validataMap");
 			Map<String, String> map = new HashMap<String, String>();
 			map.put( v.get("dirid").toString(), v.get("type").toString() );
-			FSApp.getInstance().validataMap.add(map);
+			app.validataMap.add(map);
+			app.saveArray( v.get("type").toString(),  
+					v.get("dirid").toString(),  MainActivity.this );
 			//loadData();
 		}else{
 			linklist.pop();
@@ -87,6 +91,9 @@ public class MainActivity extends Activity implements CallApiListener{
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
+		app = (FSApp)MainActivity.this.getApplication();
+		
 		linklist.push("isRoot");
 		ActionBar actionBar = getActionBar();
 		actionBar.setTitle("联通手机知识库");
@@ -253,7 +260,7 @@ public class MainActivity extends Activity implements CallApiListener{
 			map.put( currDir.get("dirid").toString(), currDir.get("type").toString() );
 		}
 		if(currDir != null
-			&& FSApp.getInstance().validataMap.indexOf(map) == -1
+			&& app.validataMap.indexOf(map) == -1
 			&& "is_locked".equalsIgnoreCase(currDir.get("is_locked").toString()) ) {
 			//验证机制：将文件夹的id传入密码验证的activity中进行验证，
 			//成功返回一个标志，传到要显示的页面保存起来，下次进入不再验证。
@@ -277,7 +284,7 @@ public class MainActivity extends Activity implements CallApiListener{
 	@Override
 	public JSONObject callApi(int what) {
 		Map<String, String> item = new HashMap<String, String>();
-		item.put("user_id", FSApp.getInstance().UserId);
+		item.put("user_id", app.UserId);
 		
 		if (currDir != null && currDir.get("type").toString().equals("folder")) {
 			item.put("id", currDir.get("dirid").toString());
