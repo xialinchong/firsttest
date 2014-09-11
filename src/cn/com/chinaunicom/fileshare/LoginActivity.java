@@ -133,8 +133,8 @@ public class LoginActivity extends Activity implements CallApiListener {
 			app.UserId = result.getString("id");
 			app.clearMapXml(LoginActivity.this);
 			app.saveArray("UserId", app.UserId, LoginActivity.this);
-			app.saveArray("user_login", mlogin_name.getText().toString(), LoginActivity.this);
-			app.saveArray("user_login", mlogin_pwd.getText().toString(), LoginActivity.this);
+			app.saveArray("login_name", mlogin_name.getText().toString(), LoginActivity.this);
+			app.saveArray("login_pwd", mlogin_pwd.getText().toString(), LoginActivity.this);
 			LoginActivity.this.myhandler.sendEmptyMessage(SUCCESS);
 		} catch (Exception e) {
 			e.printStackTrace();

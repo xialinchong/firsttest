@@ -114,15 +114,6 @@ public class MainActivity extends Activity implements CallApiListener{
 						ImageView lock = (ImageView)rowView.findViewById(R.id.locked);
 						ImageView newimg = (ImageView)rowView.findViewById(R.id.newimg);
 						
-//						LayoutParams para1 = iv.getLayoutParams();
-//						para1.width = 50;
-//						para1.height = 50;
-//						iv.setLayoutParams(para1);
-//						LayoutParams para2 = lock.getLayoutParams();
-//						para2.width = 24;
-//						para2.height = 24;
-//						lock.setLayoutParams(para2);
-//						lock.setScaleType(ImageView.ScaleType.FIT_END);
 						
 						String is_empty = datas.get(position).get("is_empty").toString();
 						String type     = datas.get(position).get("type").toString();
@@ -230,6 +221,13 @@ public class MainActivity extends Activity implements CallApiListener{
 				}
 				loadData();
 			}
+		} else if (item.getItemId() == R.id.action_settings) {
+			app.clearMapXml(MainActivity.this);
+			app.UserId = null;
+			Intent intent = new Intent();
+			intent.setClass(MainActivity.this, LoginActivity.class);
+			MainActivity.this.startActivity(intent);
+			MainActivity.this.finish();
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -383,4 +381,14 @@ public class MainActivity extends Activity implements CallApiListener{
 			break;
 		}
 	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		super.onCreateOptionsMenu(menu);
+		
+		getMenuInflater().inflate(R.menu.main, menu);
+		return true;
+	}
+	
+	
 }

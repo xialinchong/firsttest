@@ -2,18 +2,27 @@ package cn.com.chinaunicom.fileshare;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.json.JSONObject;
+
+import com.tencent.android.tpush.XGIOperateCallback;
+import com.tencent.android.tpush.XGPushManager;
+import com.yidianhulian.Api;
+import com.yidianhulian.CallApiTask;
+import com.yidianhulian.CallApiTask.CallApiListener;
+
 import android.app.Application;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
-public class FSApp extends Application {
+public class FSApp extends Application implements CallApiListener {
 
 //	private static FSApp mInstance = null;
 	//把登录用户的id记录在全局
@@ -21,6 +30,9 @@ public class FSApp extends Application {
 //	public List<Map<String, Object>> validataMap = new ArrayList<Map<String, Object>>();
 	public List<Map<String, String>> validataMap = new ArrayList<Map<String, String>>();
 	public Set<String> loginSet = new TreeSet<String>();
+	private String login_name = null;
+	private String login_pwd = null;
+	private String devicetoken = null;
 //	public static FSApp getInstance() {
 //		if(mInstance==null)
 //			mInstance = new FSApp();
@@ -44,18 +56,32 @@ public class FSApp extends Application {
 					context.getSharedPreferences("validata", context.MODE_APPEND);
 			SharedPreferences.Editor editor = sharedPreferences.edit();
 			
-			Set<String> idSet = sharedPreferences.getStringSet( fileType, new HashSet<String>() );
+			Set<String> idSet = sharedPreferences.getStringSet( fileType, new TreeSet<String>() );
 			idSet.add( value );
 			editor.putStringSet( fileType, idSet );
 			editor.commit();
-//			editor.clear();
-//			editor.commit();
 		}
 	}
 	
 	@Override
 	public void onCreate() {
 		getArray();
+		XGPushManager.registerPush(getApplicationContext(), new XGIOperateCallback() {
+			
+			@Override
+			public void onSuccess(Object data, int flag) {
+				Log.d("TPush", "注册成功，设备token为：" + data);
+				devicetoken = (String)data;
+				if (UserId != null && devicetoken != null) {
+					new CallApiTask(0, FSApp.this).execute();
+				}
+			}
+			
+			@Override
+			public void onFail(Object data, int errCode, String msg) {
+				Log.d("TPush", "注册失败，错误码：" + errCode + ",错误信息：" + msg);
+			}
+		});
 		super.onCreate();
 	}
 
@@ -67,17 +93,24 @@ public class FSApp extends Application {
 			String key = it.next();
 			
 			Set<String> set = map.get(key);
-			for (String id : set) {
-				if (key.equals("user_login")) {
-					loginSet.add(id);
+			for (String value : set) {
+				if (key.equals("login_name")) {
+//					loginSet.add(id);
+					login_name = value;
 				} else if (key.equals("UserId")) {
-					UserId = id;
+					UserId = value;
+				} else if (key.equals("login_pwd")) {
+					login_pwd = value;
 				} else {
 					Map<String, String> m = new HashMap<String, String>();
-					m.put(id, key);
+					m.put(value, key);
 					validataMap.add(m);
 				}
 			}
+		}
+		if (login_name != null && login_pwd != null) {
+			loginSet.add(login_name);
+			loginSet.add(login_pwd);
 		}
 	}
 	
@@ -89,6 +122,8 @@ public class FSApp extends Application {
 		SharedPreferences sharedPreferences = 
 				context.getSharedPreferences("validata", context.MODE_APPEND);
 		SharedPreferences.Editor editor = sharedPreferences.edit();
+		validataMap.clear();
+		loginSet.clear();
 		editor.clear();
 		editor.commit();
 	}
@@ -123,4 +158,28 @@ public class FSApp extends Application {
 
 		return isFullEqual;
 	}
+
+	@Override
+	public Dialog getProgressDialog(String title) {
+		return null;
+	}
+
+	@Override
+	public JSONObject callApi(int what) {
+		Map<String, String> mitem = new HashMap<String, String>();
+		mitem.put("id", UserId);
+		mitem.put("deviceToken", devicetoken);
+		return Api.get("http://ufileshare.sinaapp.com/save_android_token.php", mitem);
+	}
+
+	@Override
+	public void onCallApiSuccess(int what, JSONObject result) {
+		
+	}
+
+	@Override
+	public void onCallApiFail(int what, JSONObject result) {
+		
+	}
+	
 }

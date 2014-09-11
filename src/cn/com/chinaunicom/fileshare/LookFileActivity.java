@@ -1,6 +1,7 @@
 package cn.com.chinaunicom.fileshare;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,13 +10,16 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.R.anim;
 import android.R.integer;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -40,6 +44,7 @@ public class LookFileActivity extends Activity implements CallApiListener {
 	private static final int MARK_AS_READED = 1;
 	private static final int LOAD_FILE = 2;
 	private static final int LOAD_NEW_FILE = 3;
+	private static final int SERVICE_ERROR = 4;
 	
 	private ProgressDialog dialog ;
 	
@@ -74,7 +79,10 @@ public class LookFileActivity extends Activity implements CallApiListener {
 					dialog.dismiss();
 				}
 				break;
-
+			case SERVICE_ERROR:
+				Toast.makeText(LookFileActivity.this, "服务器错误！", Toast.LENGTH_LONG).show();
+				break;
+				
 			default:
 				break;
 			}
@@ -82,12 +90,14 @@ public class LookFileActivity extends Activity implements CallApiListener {
 		
 	};
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.lookfile);
 		
 		app = (FSApp)LookFileActivity.this.getApplication();
+		currDir = (Map<String, Object>)getIntent().getSerializableExtra("currDir");
 		
 		mlookhistory = (Button)findViewById(R.id.lookhistory);
 		
@@ -96,8 +106,18 @@ public class LookFileActivity extends Activity implements CallApiListener {
 			
 			@Override
 			public void onClick(View v) {
-				String type = currDir.get("type").toString();
-//				loadData(OTHER_WAYS);
+				//wps通过网络路劲打开文件
+				Intent wpsIntent = new Intent();
+				wpsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+				wpsIntent.setAction(Intent.ACTION_VIEW);
+				Uri uri = Uri.parse( currDir.get("file_path").toString() );
+				wpsIntent.setData(uri);
+				
+				try {
+					startActivity(wpsIntent);
+				} catch (ActivityNotFoundException e) {
+					e.printStackTrace();
+				}
 			}
 		});
 		
@@ -124,8 +144,15 @@ public class LookFileActivity extends Activity implements CallApiListener {
 				showListDialog();
 			}
 		});
-		
-		currDir = (Map<String, Object>)getIntent().getSerializableExtra("currDir");
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		loadData(LOAD_FILE);
+	}
+
+	private void initData(){
 		versionmap = (List<Map<String, String>>) currDir.get("versions");
 		strarr = new String[versionmap.size()];
 		int iteor = 0;
@@ -133,7 +160,6 @@ public class LookFileActivity extends Activity implements CallApiListener {
 			strarr[iteor]    = map.get("desc");
 			iteor++;
 		}
-		
 		
 		filelogo = (ImageView)findViewById(R.id.filelogo);
 		filename = (TextView)findViewById(R.id.filename);
@@ -166,15 +192,7 @@ public class LookFileActivity extends Activity implements CallApiListener {
 				"   " + currDir.get("file_size").toString();
 		
 		has_new = currDir.get("has_new").toString();
-	}
-
-	@Override
-	protected void onResume() {
-		super.onResume();
-		loadData(LOAD_FILE);
-	}
-
-	private void loadData(int what){
+		
 		if ("no".equals( has_new )) {
 			mlooknew.setVisibility(View.GONE);
 			filedesc.setText(desc + "  最新版本");
@@ -185,9 +203,15 @@ public class LookFileActivity extends Activity implements CallApiListener {
 		if ("no".equals( currDir.get("has_unread").toString() )) {
 			mreaded.setVisibility(View.GONE);
 		}
+		
 		if ("null".equals( currDir.get("history").toString() )) {
 			mlookhistory.setVisibility(View.GONE);
 		}
+	}
+	
+	private void loadData(int what){
+//		initData();
+		
 		if(currDir != null ){
 			Map<String, String> map = new HashMap<String, String>();
 			map.put( currDir.get("dirid").toString(), currDir.get("type").toString() );
@@ -233,7 +257,6 @@ public class LookFileActivity extends Activity implements CallApiListener {
 			public void onClick(DialogInterface dialog, int which) {
 				currId = versionmap.get(which).get("id");
 				loadData(LOAD_FILE);
-//				Toast.makeText(LookFileActivity.this, versionmap.get(which).get("id"), Toast.LENGTH_LONG).show();;
 			}
 		});
 		
@@ -267,10 +290,6 @@ public class LookFileActivity extends Activity implements CallApiListener {
 			item.put("id", currDir.get("dirid").toString());
 			item.put("load_type", "new");
 			break;
-//		case OTHER_WAYS:
-//			item.put("id", currDir.get("dirid").toString());
-//			item.put("load_type", "open_way");
-//			break;
 		default:
 			break;
 		}
@@ -279,35 +298,75 @@ public class LookFileActivity extends Activity implements CallApiListener {
 
 	@Override
 	public void onCallApiSuccess(int what, JSONObject result) {
-		switch (what) {
-		case LOAD_FILE:
-			//查看文件
-			//返回新的currDir
-			break;
-		case LOAD_NEW_FILE:
-			mlooknew.setVisibility(View.GONE);
-			break;
-		case MARK_AS_READED:
-			//没有任何数据处理，是否合并到default
-			try {
-				JSONObject datas = result.getJSONObject("datas");
+		JSONObject datas;
+		try {
+			datas = result.getJSONObject("datas");
+			JSONObject file = datas.getJSONObject("file");
+			currDir.clear();
+			
+
+			currDir.put( "file_id", file.getString("version_id") );
+			currDir.put( "file_path", file.getString("file_path") );
+			currDir.put( "file_size", file.getString("file_size") );
+			currDir.put( "folder_id", file.getString("folder_id") );
+			currDir.put( "downloads", file.getString("downloads") );
+			currDir.put( "reads", file.getString("reads") );
+			currDir.put("has_new", file.getString("has_new"));
+			currDir.put("history", file.getString("history"));
+			
+			JSONArray versions = file.getJSONArray("versions");
+			List<Map<String, String>> versionmap = new ArrayList<Map<String, String>>();
+			for (int j = 0 ; j < versions.length() ; j++) {
+				JSONObject versionsobj = (JSONObject) versions.get(j);
+				Map<String, String> vercurrDir = new HashMap<String, String>();
+				vercurrDir.put("id", versionsobj.getString("id"));
+				vercurrDir.put("desc", versionsobj.getString("desc"));
+				versionmap.add(vercurrDir);
+			}
+			currDir.put("versions", versionmap);
+			String dirdesc  = file.getString("modified_on") + 
+					"    " + file.getString("file_size");
+			currDir.put( "dirid", file.getString("id") );
+			currDir.put( "dirname", file.getString("name") );
+			currDir.put( "psw", file.getString("psw") );
+			currDir.put( "is_locked", file.getString("is_locked") );
+			currDir.put( "created_on", file.getString("created_on") );
+			currDir.put( "modified_on", file.getString("modified_on") );
+			currDir.put( "dirdesc",  dirdesc);
+			currDir.put("has_unread", file.getString("has_unread"));
+			
+			currDir.put( "type",  file.getString("type") );
+			currDir.put( "is_empty", "no" );
+			
+			switch (what) {
+			case LOAD_FILE:
+				//查看文件
+				//返回新的currDir
+				break;
+			case LOAD_NEW_FILE:
+				mlooknew.setVisibility(View.GONE);
+				break;
+			case MARK_AS_READED:
+				//没有任何数据处理，是否合并到default
 				if (datas.getString("is_insert").equals("yes")) {
 					mreaded.setVisibility(View.GONE);
 				}
+				
 				LookFileActivity.this.myhandler.sendEmptyMessage(MARK_AS_READED);
-//				loadData(LOAD_FILE);
-			} catch (JSONException e) {
-				e.printStackTrace();
+				break;
+			default:
+				break;
 			}
-			break;
-		default:
-			break;
-		}
+			initData();
+		} catch (JSONException e1) {
+			e1.printStackTrace();
+		}			
 	}
 
 	@Override
 	public void onCallApiFail(int what, JSONObject result) {
 		//错误时做什么操作
+		LookFileActivity.this.myhandler.sendEmptyMessage(SERVICE_ERROR);
 	}
 	
 }
