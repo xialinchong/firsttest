@@ -72,6 +72,23 @@ public class FSApp extends Application implements CallApiListener {
 	@Override
 	public void onCreate() {
 		super.onCreate();
+		XGPushManager.registerPush(getApplicationContext(),
+				new XGIOperateCallback() {
+
+					@Override
+					public void onSuccess(Object data, int flag) {
+						Log.d("TPush", "注册成功，设备token为：" + data);
+						devicetoken = (String) data;
+						if (UserId != null && devicetoken != null) {
+							new CallApiTask(0, FSApp.this).execute();
+						}
+					}
+
+					@Override
+					public void onFail(Object data, int errCode, String msg) {
+						Log.d("TPush", "注册失败，错误码：" + errCode + ",错误信息：" + msg);
+					}
+				});
 	}
 
 	public void getArray() {
@@ -98,23 +115,7 @@ public class FSApp extends Application implements CallApiListener {
 				}
 			}
 		}
-		XGPushManager.registerPush(getApplicationContext(),
-				new XGIOperateCallback() {
-
-					@Override
-					public void onSuccess(Object data, int flag) {
-						Log.d("TPush", "注册成功，设备token为：" + data);
-						devicetoken = (String) data;
-						if (UserId != null && devicetoken != null) {
-							new CallApiTask(0, FSApp.this).execute();
-						}
-					}
-
-					@Override
-					public void onFail(Object data, int errCode, String msg) {
-						Log.d("TPush", "注册失败，错误码：" + errCode + ",错误信息：" + msg);
-					}
-				});
+		
 	}
 
 	/**
