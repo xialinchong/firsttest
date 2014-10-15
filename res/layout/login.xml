@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
-    android:background="#ffffff" >
+    android:background="#efefef" >
     
     <ImageView 
         android:id="@+id/image1"
@@ -17,27 +17,24 @@
     
     <EditText 
         android:id="@+id/login_name"
-        android:layout_width="fill_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/image1"
         android:layout_marginTop="20dp"
-        android:layout_marginLeft="50dp"
-        android:layout_marginRight="50dp"
+        android:layout_centerHorizontal="true"
         android:paddingLeft="50dp"
-        android:text="login"
         android:singleLine="true"
         android:background="@drawable/login_name" />
     
     <EditText 
         android:id="@+id/login_pwd"
-        android:layout_width="fill_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/login_name"
         android:layout_marginTop="20dp"
         android:layout_alignLeft="@+id/login_name"
         android:layout_alignRight="@+id/login_name"
         android:inputType="textPassword"
-        android:text="123456"
         android:paddingLeft="50dp"
         android:background="@drawable/login_psw" />
     
@@ -52,15 +49,13 @@
         android:text="登录"
         android:background="@drawable/loginbtn" />
 
-    <TextView 
-        android:id="@+id/forget_pwd"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <TextView
         android:layout_below="@+id/login_btn"
-        android:layout_alignRight="@+id/login_btn"
-        android:layout_marginTop="40dp"
-        android:textColor="#8A2BE2"
-         />
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:gravity="center"
+        android:text="中国联通贵阳市分公司 版权所有" />
     
     
 </RelativeLayout>

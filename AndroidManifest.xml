@@ -46,6 +46,16 @@
             android:screenOrientation="portrait"
             android:theme="@android:style/Holo.ButtonBar">
         </activity>
+        <activity 
+            android:name=".Modify_PSW" 
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Holo.ButtonBar">
+        </activity>
+        <activity 
+            android:name=".SearchFileActivity" 
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Holo.ButtonBar">
+        </activity>
         
         <!-- 【必须】 信鸽receiver广播接收 -->
 	    <receiver

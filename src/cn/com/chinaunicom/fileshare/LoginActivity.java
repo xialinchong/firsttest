@@ -8,10 +8,6 @@ import java.util.TreeSet;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.yidianhulian.Api;
-import com.yidianhulian.CallApiTask;
-import com.yidianhulian.CallApiTask.CallApiListener;
-
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -19,17 +15,19 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.text.Html;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
+
+import com.yidianhulian.Api;
+import com.yidianhulian.CallApiTask;
+import com.yidianhulian.CallApiTask.CallApiListener;
+import com.yidianhulian.Util;
 
 public class LoginActivity extends Activity implements CallApiListener {
 
-	private TextView mforgePwd = null;
 	private Button mloginBtn = null;
 	private EditText mlogin_name = null;
 	private EditText mlogin_pwd = null;
@@ -81,38 +79,32 @@ public class LoginActivity extends Activity implements CallApiListener {
 		
 		mlogin_name = (EditText) findViewById(R.id.login_name);
 		mlogin_pwd = (EditText) findViewById(R.id.login_pwd);
-		
-		loginSet.add( mlogin_name.getText().toString() );
-		loginSet.add( mlogin_pwd.getText().toString() );
-		Boolean flag = app.isSetEqual(app.loginSet, loginSet);
-		if (flag) {
-			Intent intent = new Intent();
-			intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			intent.setClass(LoginActivity.this, MainActivity.class);
-			LoginActivity.this.startActivity(intent);
-			return;
-		}
+
 		
 		mloginBtn = (Button) findViewById(R.id.login_btn);
-		mforgePwd = (TextView) findViewById(R.id.forget_pwd);
-
-		mforgePwd.setText(Html.fromHtml("<u>找回密码</u>"));
 
 		mloginBtn.setOnClickListener(new mloginBtnOnclickListener());
-		mforgePwd.setOnClickListener(new View.OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				// 忘记密码应该做什么操作
-			}
-		});
 
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
+		app.getArray();
+		if (app.login_name != null && app.login_pwd != null) {
+			Intent intent = new Intent();
+			intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			intent.setClass(LoginActivity.this, MainActivity.class);
+			LoginActivity.this.startActivity(intent);
+			return;
+		}
 	}
+
+//	@Override
+//	public void onBackPressed() {
+//		super.onBackPressed();
+////		android.os.Process.killProcess(android.os.Process.myPid());
+//	}
 
 	@Override
 	public Dialog getProgressDialog(String title) {
@@ -124,17 +116,19 @@ public class LoginActivity extends Activity implements CallApiListener {
 		Map<String, String> mitem = new HashMap<String, String>();
 		mitem.put("login_name", mlogin_name.getText().toString());
 		mitem.put("login_pwd", mlogin_pwd.getText().toString());
-		return Api.post("http://ufileshare.sinaapp.com/user_login_api.php", mitem);
+		return Api.post(app.HOST + "user_login_api.php", mitem);
 	}
 
 	@Override
 	public void onCallApiSuccess(int what, JSONObject result) {
 		try {
-			app.UserId = result.getString("id");
 			app.clearMapXml(LoginActivity.this);
+			app.UserId = result.getString("id");
+			app.login_name = mlogin_name.getText().toString();
+			app.login_pwd  = Util.md5( mlogin_pwd.getText().toString() );
 			app.saveArray("UserId", app.UserId, LoginActivity.this);
-			app.saveArray("login_name", mlogin_name.getText().toString(), LoginActivity.this);
-			app.saveArray("login_pwd", mlogin_pwd.getText().toString(), LoginActivity.this);
+			app.saveArray("login_name", app.login_name, LoginActivity.this);
+			app.saveArray("login_pwd",  app.login_pwd, LoginActivity.this);
 			LoginActivity.this.myhandler.sendEmptyMessage(SUCCESS);
 		} catch (Exception e) {
 			e.printStackTrace();

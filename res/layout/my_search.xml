@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="#ffffff" >
+    
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+        
+        <EditText
+	         android:id="@+id/filesname"
+	         android:layout_alignParentTop="true"
+		     android:layout_width="fill_parent"
+		     android:layout_height="wrap_content"
+		     android:layout_margin="10dp"
+		     android:hint="@string/search_hint"
+		     android:textColor="#000000"
+		     android:gravity="center"
+		     android:singleLine="true"
+		     android:imeOptions="actionSearch"
+	    	android:background="@android:drawable/edit_text" />
+	    
+	    <View
+	        android:layout_below="@+id/filesname"
+	        android:id="@+id/div"
+	        android:layout_width="fill_parent"
+	        android:layout_height="1dp"
+	        android:background="#d0d0d0" />
+	    
+	    <ListView
+	        android:layout_below="@+id/div"
+	        android:id="@+id/filelist"
+	        android:layout_width="fill_parent"
+	        android:layout_height="fill_parent"
+	        android:divider="#d0d0d0"
+	        android:background="#ffffff"
+	        android:dividerHeight="1dp" >
+	    </ListView>
+        
+    </RelativeLayout>
+</LinearLayout>

@@ -4,5 +4,7 @@
     <string name="app_name">联通手机知识库</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="search_label">搜索</string>
+    <string name="search_hint">查询文档</string>
 
 </resources>

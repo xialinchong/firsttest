@@ -30,6 +30,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -59,6 +61,7 @@ public class LookFileActivity extends Activity implements CallApiListener {
 	private ImageView filelogo = null;
 	private TextView filename  = null;
 	private TextView filedesc  = null;
+	private WebView myWebView = null;
 	
 	private Map<String, Object> currDir =  null;
 	List<Map<String, String>> versionmap;
@@ -143,6 +146,18 @@ public class LookFileActivity extends Activity implements CallApiListener {
 			public void onClick(View v) {
 				showListDialog();
 			}
+		});
+		
+		myWebView = (WebView)findViewById(R.id.myWebView);
+		myWebView.loadUrl( currDir.get("html_file").toString() );
+		myWebView.setWebViewClient(new WebViewClient(){
+
+			@Override
+			public boolean shouldOverrideUrlLoading(WebView view, String url) {
+				view.loadUrl(url);
+				return true;
+			}
+			
 		});
 	}
 
@@ -272,6 +287,7 @@ public class LookFileActivity extends Activity implements CallApiListener {
 	public JSONObject callApi(int what) {
 		Map<String, String> item = new HashMap<String, String>();
 		item.put("user_id", app.UserId);
+		item.put("token", app.login_pwd);
 		
 		switch (what) {
 		case LOAD_FILE:
@@ -293,7 +309,7 @@ public class LookFileActivity extends Activity implements CallApiListener {
 		default:
 			break;
 		}
-		return Api.get("http://ufileshare.sinaapp.com/handle_file_post_get.php", item);
+		return Api.get(app.HOST + "handle_file_post_get.php", item);
 	}
 
 	@Override

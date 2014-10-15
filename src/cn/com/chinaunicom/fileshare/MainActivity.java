@@ -36,7 +36,8 @@ import com.yidianhulian.CallApiTask.CallApiListener;
 public class MainActivity extends Activity implements CallApiListener{
 	private LinkedList<Object> linklist = new LinkedList<Object>();
 	private List<Map<String, Object>> datas = new ArrayList<Map<String, Object>>();
-	private SimpleAdapter adapter;
+//	private SimpleAdapter adapter;
+	private ListAdapter adapter;
 	private ListView mDirList;
 	private final int DEFAULT_LOAD = 1;
 	private final int LOAD_FOLDER_CONTENT = 2;
@@ -46,6 +47,7 @@ public class MainActivity extends Activity implements CallApiListener{
 	
 	private Map<String, Object> currDir =  null;
 	
+//	private List<Activity> activityList = new LinkedList<Activity>(); 
 	FSApp app;
 	
 	private Handler myhandler = new Handler(){
@@ -83,7 +85,12 @@ public class MainActivity extends Activity implements CallApiListener{
 			//loadData();
 		}else{
 			linklist.pop();
-			currDir = (Map<String, Object>) linklist.getFirst();
+			if (linklist.getFirst().equals("isRoot")) {
+				currDir = null;
+			} else {
+				currDir = (Map<String, Object>) linklist.getFirst();
+			}
+			
 			Toast.makeText(this, "密码未验证或验证失败", Toast.LENGTH_LONG).show();
 		}
 	}
@@ -103,69 +110,70 @@ public class MainActivity extends Activity implements CallApiListener{
 		setContentView(R.layout.main_layout);
 		dialog = new ProgressDialog(this);
 		dialog.setMessage("数据加载中,请稍等 …");
-		adapter = new SimpleAdapter(this, datas, R.layout.diritem, 
-				new String[]{"dirname","dirdesc"}, new int[]{R.id.dirname,R.id.dirdesc}){
-
-					@Override
-					public View getView(int position, View convertView,
-							ViewGroup parent) {
-						View rowView= super.getView(position, convertView, parent);
-						ImageView iv = (ImageView)rowView.findViewById(R.id.folderimg);
-						ImageView lock = (ImageView)rowView.findViewById(R.id.locked);
-						ImageView newimg = (ImageView)rowView.findViewById(R.id.newimg);
-						
-						
-						String is_empty = datas.get(position).get("is_empty").toString();
-						String type     = datas.get(position).get("type").toString();
-						String has_unread = datas.get(position).get("has_unread").toString();
-						
-						if ( "yes".equals(has_unread) ) {
-							newimg.setVisibility(View.VISIBLE);
-						} else if ( "no".equals(has_unread) ) {
-							newimg.setVisibility(View.GONE);
-						} 
-						
-						//1.文件夹为空,图片设成空文件夹的图片
-						if ( "folder".equals(type) && "yes".equals(is_empty) ) {
-							iv.setImageResource(R.drawable.folder_empty);
-						}
-						else if ( "folder".equals(type) && "no".equals(is_empty) ) {
-							iv.setImageResource(R.drawable.folder);
-						}
-						//3.文件图片
-						else if ( ! "folder".equals(type) ) {
-							if ( "word".equals(type) ) {
-								iv.setImageResource(R.drawable.word);
-							} 
-							//Excel文件的图片
-							else if ( "excel".equals(type) ) {
-								iv.setImageResource(R.drawable.excel);
-							} 
-							//ppt文件的图片
-							else if ( "ppt".equals(type) ) {
-								iv.setImageResource(R.drawable.ppt);
-							} 
-							//pdf文件的图片
-							else if ( "pdf".equals(type) ) {
-								iv.setImageResource(R.drawable.pdf);
-							}
-							//图片文件的图片
-							else if ( "image".equals(type) ) {
-								iv.setImageResource(R.drawable.image);
-							}
-							//未知类型的图片
-							else {
-								iv.setImageResource(R.drawable.qt);
-							}
-						}
-						if ( !datas.get(position).get("is_locked").equals("is_locked")) {
-							lock.setVisibility(View.GONE);
-						} else if ( datas.get(position).get("is_locked").equals("is_locked")) {
-							lock.setVisibility(View.VISIBLE);
-						}
-						return rowView;
-					}
-		};
+		adapter = new ListAdapter(this, datas);
+//		adapter = new SimpleAdapter(this, datas, R.layout.diritem, 
+//				new String[]{"dirname","dirdesc"}, new int[]{R.id.dirname,R.id.dirdesc}){
+//
+//					@Override
+//					public View getView(int position, View convertView,
+//							ViewGroup parent) {
+//						View rowView= super.getView(position, convertView, parent);
+//						ImageView iv = (ImageView)rowView.findViewById(R.id.folderimg);
+//						ImageView lock = (ImageView)rowView.findViewById(R.id.locked);
+//						ImageView newimg = (ImageView)rowView.findViewById(R.id.newimg);
+//						
+//						
+//						String is_empty = datas.get(position).get("is_empty").toString();
+//						String type     = datas.get(position).get("type").toString();
+//						String has_unread = datas.get(position).get("has_unread").toString();
+//						
+//						if ( "yes".equals(has_unread) ) {
+//							newimg.setVisibility(View.VISIBLE);
+//						} else if ( "no".equals(has_unread) ) {
+//							newimg.setVisibility(View.GONE);
+//						} 
+//						
+//						//1.文件夹为空,图片设成空文件夹的图片
+//						if ( "folder".equals(type) && "yes".equals(is_empty) ) {
+//							iv.setImageResource(R.drawable.folder_empty);
+//						}
+//						else if ( "folder".equals(type) && "no".equals(is_empty) ) {
+//							iv.setImageResource(R.drawable.folder);
+//						}
+//						//3.文件图片
+//						else if ( ! "folder".equals(type) ) {
+//							if ( "word".equals(type) ) {
+//								iv.setImageResource(R.drawable.word);
+//							} 
+//							//Excel文件的图片
+//							else if ( "excel".equals(type) ) {
+//								iv.setImageResource(R.drawable.excel);
+//							} 
+//							//ppt文件的图片
+//							else if ( "ppt".equals(type) ) {
+//								iv.setImageResource(R.drawable.ppt);
+//							} 
+//							//pdf文件的图片
+//							else if ( "pdf".equals(type) ) {
+//								iv.setImageResource(R.drawable.pdf);
+//							}
+//							//图片文件的图片
+//							else if ( "image".equals(type) ) {
+//								iv.setImageResource(R.drawable.image);
+//							}
+//							//未知类型的图片
+//							else {
+//								iv.setImageResource(R.drawable.qt);
+//							}
+//						}
+//						if ( !datas.get(position).get("is_locked").equals("is_locked")) {
+//							lock.setVisibility(View.GONE);
+//						} else if ( datas.get(position).get("is_locked").equals("is_locked")) {
+//							lock.setVisibility(View.VISIBLE);
+//						}
+//						return rowView;
+//					}
+//		};
 		
 		mDirList = (ListView)findViewById(R.id.dirlist);
 		mDirList.setAdapter(adapter);
@@ -220,14 +228,27 @@ public class MainActivity extends Activity implements CallApiListener{
 					currDir = (Map<String, Object>) item1;
 				}
 				loadData();
+			} else {
+				this.finish();
 			}
-		} else if (item.getItemId() == R.id.action_settings) {
+		} else if (item.getItemId() == R.id.logout) {
 			app.clearMapXml(MainActivity.this);
 			app.UserId = null;
 			Intent intent = new Intent();
 			intent.setClass(MainActivity.this, LoginActivity.class);
 			MainActivity.this.startActivity(intent);
 			MainActivity.this.finish();
+		} else if (item.getItemId() == R.id.modify_pwd) {
+			Intent itnIntent = new Intent();
+//			itnIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//			activityList.add(MainActivity.this);
+//			itnIntent.putExtra("activity", (Serializable)activityList);
+			itnIntent.setClass(MainActivity.this, Modify_PSW.class);
+			MainActivity.this.startActivity(itnIntent);
+		} else if (item.getItemId() == R.id.search) {
+			Intent itnIntent = new Intent();
+			itnIntent.setClass(MainActivity.this, SearchFileActivity.class);
+			MainActivity.this.startActivity(itnIntent);
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -283,6 +304,7 @@ public class MainActivity extends Activity implements CallApiListener{
 	public JSONObject callApi(int what) {
 		Map<String, String> item = new HashMap<String, String>();
 		item.put("user_id", app.UserId);
+		item.put("token", app.login_pwd);
 		
 		if (currDir != null && currDir.get("type").toString().equals("folder")) {
 			item.put("id", currDir.get("dirid").toString());
@@ -290,7 +312,7 @@ public class MainActivity extends Activity implements CallApiListener{
 			item.put("id", currDir.get("folder_id").toString());
 		}
 		
-		return Api.get("http://ufileshare.sinaapp.com/filelist_api.php", item);
+		return Api.get(app.HOST + "filelist_api.php", item);
 	}
 
 	@Override
@@ -310,6 +332,7 @@ public class MainActivity extends Activity implements CallApiListener{
 					String dirdesc    = null;
 					String is_empty	  = "no";
 					if ( !"folder".equals(type) ) {
+						item.put("html_file", jsonObject.getString("html_file") );
 						item.put( "file_id", jsonObject.getString("version_id") );
 						item.put( "file_path", jsonObject.getString("file_path") );
 						item.put( "file_size", jsonObject.getString("file_size") );
@@ -375,6 +398,8 @@ public class MainActivity extends Activity implements CallApiListener{
 		switch (what) {
 		case DEFAULT_LOAD:
 		case LOAD_FOLDER_CONTENT:
+			datas.clear();
+			adapter.notifyDataSetChanged();
 			MainActivity.this.myhandler.sendEmptyMessage(DEFAULT_LOAD);
 			break;
 		default:
