@@ -149,6 +149,8 @@ public class LookFileActivity extends Activity implements CallApiListener {
 		});
 		
 		myWebView = (WebView)findViewById(R.id.myWebView);
+		myWebView.getSettings().setSupportZoom(true);
+		myWebView.getSettings().setBuiltInZoomControls(true);
 		myWebView.loadUrl( currDir.get("html_file").toString() );
 		myWebView.setWebViewClient(new WebViewClient(){
 

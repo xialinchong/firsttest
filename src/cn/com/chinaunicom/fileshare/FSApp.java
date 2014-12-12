@@ -34,7 +34,8 @@ public class FSApp extends Application implements CallApiListener {
 	private String devicetoken = null;
 	
 	//113.10.188.155本地 58.16.63.195外部
-	public String  HOST = "http://58.16.63.195/";
+//	public String  HOST = "http://58.16.63.195/";
+	public String  HOST = "http://113.10.188.155/";
 
 	// public static FSApp getInstance() {
 	// if(mInstance==null)
@@ -177,7 +178,7 @@ public class FSApp extends Application implements CallApiListener {
 	@Override
 	public JSONObject callApi(int what) {
 		Map<String, String> mitem = new HashMap<String, String>();
-		mitem.put("id", UserId);
+		mitem.put("user_id", UserId);
 		mitem.put("token", login_pwd);
 		mitem.put("deviceToken", devicetoken);
 		return Api.get(HOST + "save_android_token.php", mitem);

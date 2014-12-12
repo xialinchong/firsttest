@@ -47,13 +47,16 @@ public class LoginActivity extends Activity implements CallApiListener {
 			switch (msg.what) {
 			case EMPTY_PWD_NAME:
 				Toast.makeText(LoginActivity.this, "用户名或密码不能为空！", Toast.LENGTH_LONG).show();
+				mloginBtn.setClickable(true);
 				break;
 			case ERROE_PWD_NAME:
 				Toast.makeText(LoginActivity.this, "用户名或密码错误！", Toast.LENGTH_LONG).show();
+				mloginBtn.setClickable(true);
 				break;
 			case SERVICE_ERROR:
 				//接口调用出错
 				Toast.makeText(LoginActivity.this, "服务器错误！", Toast.LENGTH_LONG).show();
+				mloginBtn.setClickable(true);
 				break;
 			case SUCCESS:
 				Intent intent = new Intent();
@@ -64,7 +67,7 @@ public class LoginActivity extends Activity implements CallApiListener {
 			default:
 				break;
 			}
-			if (dialog.isShowing()) {
+			if (dialog != null && dialog.isShowing()) {
 				dialog.dismiss();
 			}
 		}
